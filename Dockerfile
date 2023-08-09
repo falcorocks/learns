@@ -1,0 +1,3 @@
+FROM alpine/curl@sha256:1e19174d849ab039404dd9c47a6eb2b62aa361af9fa1b41cc4cd036a0a438148
+
+RUN echo $RANDOM > RANDOM
