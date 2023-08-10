@@ -7,7 +7,7 @@ on:
 
 # Defines two custom environment variables for the workflow. These are used for the Container registry domain, and a name for the Docker image that this workflow builds.
 env:
-  IMAGE: ttl.sh/${{github.run_number}}:1h
+  IMAGE: ttl.sh/${{github.sha}}:1h
 
 jobs:
   cosign-keyless:
