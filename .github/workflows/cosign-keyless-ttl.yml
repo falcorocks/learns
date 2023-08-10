@@ -1,0 +1,20 @@
+name: Create and publish a signed Docker image to ttl.sh container registry
+
+# Configures this workflow to run every time a change is pushed to the branch called `release`.
+on:
+  push:
+    branches: ['main']
+
+# Defines two custom environment variables for the workflow. These are used for the Container registry domain, and a name for the Docker image that this workflow builds.
+env:
+  IMAGE: ttl.sh/${{github.run_id}}:1h
+
+jobs:
+  cosign-keyless:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: sigstore/cosign-installer@main
+      with:
+        cosign-release: "v2.1.1"
+    - run: cosign copy alpine $IMAGE
+    - run: cosign sign --yes $IMAGE
