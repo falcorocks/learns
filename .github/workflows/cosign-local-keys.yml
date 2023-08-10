@@ -66,4 +66,4 @@ jobs:
         with:
           cosign-release: "v2.1.1" # optional
       - name: cosign-keyless
-        run: cosign sign ghcr.io/falcorocks/learns@${{needs.build-and-push-image.outputs.digest}}
+        run: cosign sign --yes ghcr.io/falcorocks/learns@${{needs.build-and-push-image.outputs.digest}}
