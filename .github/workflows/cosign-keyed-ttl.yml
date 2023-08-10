@@ -17,7 +17,7 @@ jobs:
         cosign-release: "v2.1.1"
     - run: cosign copy alpine $IMAGE
     - uses: imjasonh/setup-crane@v0.1
-    - run: DIGEST=$(crane digest $IMAGE) && cosign sign --yes --key cosign.key $IMAGE@$DIGEST
+    - run: DIGEST=$(crane digest $IMAGE) && cosign sign --yes --key cosign.key --issue-certificate=true $IMAGE@$DIGEST
       env:
         COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
     - run: crane manifest $(cosign triangulate $IMAGE) | jq .

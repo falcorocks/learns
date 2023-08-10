@@ -2,7 +2,7 @@
 
 ## cosign
 
-### keyless
+### keyless signing
 
 `cosign`` will generate a disposable keypair for us, and ask fulcio to certify that these keys belong to us through a certificate.
 Authentication happens through github action OIDC.
@@ -66,3 +66,18 @@ X509v3 extensions:
   1.3.6.1.4.1.57264.1.22: 0c:06:70:75:62:6c:69:63
   1.3.6.1.4.1.11129.2.4.2: 04:7a:00:78:00:76:00:dd:3d:30:6a:c6:c7:11:32:63:19:1e:1c:99:67:37:02:a2:4a:5e:b8:de:3c:ad:ff:87:8a:72:80:2f:29:ee:8e:00:00:01:89:de:9b:3e:f4:00:00:04:03:00:47:30:45:02:20:6d:4e:85:d4:41:28:4c:46:73:11:ce:d6:f4:38:af:cd:9c:9b:e5:af:18:9f:b0:98:d4:77:79:e7:46:43:ae:b8:02:21:00:ed:31:cc:3e:48:3b:d6:16:9f:60:40:24:1b:ff:05:17:cc:f3:d5:ec:f8:5c:56:b8:be:92:b5:a5:15:46:ff:9a
 ```
+
+### keyed signing
+
+Where the user brings their own keys.
+I generated the keys stored in this repo at `cosign.key` and `cosign.pub` through the handy `cosign generate keypair`.
+However you can also load keys from elsewhere, including Vault and cloud vendor KMSs.
+The private key is stored encrypted.
+The password is made available to the workflow through a Github secret, see the workflow file at `.github/workflows/cosign-keyed-ttl.yml`.
+
+Since this method does not use OIDC, there is no certificate containing identity related information stored at the public `rekor` instance.
+See for instance the entry https://search.sigstore.dev/?logIndex=30751454, generated from this repo through the aforementioned workflow file.
+This method gains privacy at the cost of losing the main advantage of the keyless approach: using identity over long lived keys that have to be managed.
+However the gain in privacy is significant. There are two interesting options:
+* the upload to the transparency log can be disabled with the flag `--tlog-upload=true`
+* we can issue a code signing certificate from Fulcio, even if a key is provided `--issue-certificate=false`
