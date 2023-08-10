@@ -20,4 +20,3 @@ jobs:
     - uses: imjasonh/setup-crane@v0.1
     - run: DIGEST=$(crane digest $IMAGE) && cosign sign --yes $IMAGE@$DIGEST
     - run: crane manifest $(cosign triangulate $IMAGE) | jq .
-  cosign-keys:
