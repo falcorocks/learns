@@ -82,9 +82,8 @@ However the gain in privacy is significant.
 
 ### interesting options
 
+* we can issue a code signing certificate from Fulcio, even if a key is provided `--issue-certificate=false`
+    - what happens when this is enabled? It does not work without providing `id-token: write` permissions. What happens if you give it? Then you get a certificate in the transparency log that looks exactly like the one from the keyless workflow. See for instance https://search.sigstore.dev/?logIndex=30755007
 * the upload to the transparency log can be disabled with the flag `--tlog-upload=true`
     - what happens in keyless mode?
     - what happens in keyed mode?
-* we can issue a code signing certificate from Fulcio, even if a key is provided `--issue-certificate=false`
-    - what happens when this is enabled? It does not work without providing `id-token: write` permissions. What happens if you give it? Then you get a certificate in the transparency log that looks exactly like the one from the keyless workflow.
-
