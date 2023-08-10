@@ -1,23 +1,22 @@
-name: keyless cosign @ttl.sh
+name: keyed cosign @ttl.sh
 
 on:
   push:
     branches: ['main']
 
 env:
-  IMAGE: ttl.sh/keyless-${{github.sha}}:1h
+  IMAGE: ttl.sh/keyed-${{github.sha}}:1h
 
 jobs:
-  cosign-keyless:
+  cosign-keyed:
     runs-on: ubuntu-latest
-    permissions:
-      id-token: write
     steps:
     - uses: sigstore/cosign-installer@main
       with:
         cosign-release: "v2.1.1"
     - run: cosign copy alpine $IMAGE
     - uses: imjasonh/setup-crane@v0.1
-    - run: DIGEST=$(crane digest $IMAGE) && cosign sign --yes $IMAGE@$DIGEST
+    - run: DIGEST=$(crane digest $IMAGE) && cosign sign --yes --key cosign.key $IMAGE@$DIGEST
+      env:
+        credentials: ${{ secrets.COSIGN_PASSWORD }}
     - run: crane manifest $(cosign triangulate $IMAGE) | jq .
-  cosign-keys:
