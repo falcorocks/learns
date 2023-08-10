@@ -12,6 +12,8 @@ env:
 jobs:
   cosign-keyless:
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
     steps:
     - uses: sigstore/cosign-installer@main
       with:
