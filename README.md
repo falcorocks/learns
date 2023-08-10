@@ -87,6 +87,10 @@ However the gain in privacy is significant.
 * the upload to the transparency log can be disabled with the flag `--tlog-upload=true`
     - what happens in keyless mode? it fails
     - what happens in keyed mode? it fails. But why?
+* custom claims can be added to the signature with `--annotations`
+    - we could add the git hash, the branch name, if the branch is protected...
+    - we could try to check for the integrity of the repository...
+    - we could use annotations for promotion (instead of using different keys)
 
 ### what is the purpose of the transparency log?
 
