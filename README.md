@@ -80,4 +80,7 @@ See for instance the entry https://search.sigstore.dev/?logIndex=30751454, gener
 This method gains privacy at the cost of losing the main advantage of the keyless approach: using identity over long lived keys that have to be managed.
 However the gain in privacy is significant. There are two interesting options:
 * the upload to the transparency log can be disabled with the flag `--tlog-upload=true`
+    - is this useful? What is the added value of the transparency log when using your own keys?
 * we can issue a code signing certificate from Fulcio, even if a key is provided `--issue-certificate=false`
+    - what happens when this is enabled? It does not work without providing `id-token: write` permissions. What happens if you give it?
+
