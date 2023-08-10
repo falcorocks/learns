@@ -86,7 +86,14 @@ However the gain in privacy is significant.
     - what happens when this is enabled? It does not work without providing `id-token: write` permissions. What happens if you give it? Then you get a certificate in the transparency log that looks exactly like the one from the keyless workflow. See for instance https://search.sigstore.dev/?logIndex=30755007
 * the upload to the transparency log can be disabled with the flag `--tlog-upload=true`
     - what happens in keyless mode? it fails
-    - what happens in keyed mode? it fails
+    - what happens in keyed mode? it fails. But why?
 
 ### what is the purpose of the transparency log?
 
+* signature tells us that an authorized entity (= in possession of the private key) has certified the content of the container image
+* transparancy log tells us also:
+    - when the signing took place
+    - who triggered the signing (keyless mode only)
+    - which workflow triggered the signing (keyless mode only), including its file hash
+    - repository information at the time of signing (keyless mode only), including branch, commit hash
+* in keyless mode, working with a transparency log is therefore mandatory
