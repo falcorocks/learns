@@ -28,3 +28,5 @@ jobs:
     - run: crane manifest $(cosign triangulate $IMAGE) | jq .
     - name: verify
       run: cosign verify --key cosign.pub $IMAGE@$DIGEST
+    - name: verify claims
+      run: cosign verify --key cosign.pub -a ref_name=${{github.ref_name}} -a ref_protected=${{github.ref_protected}} -a porcelain=0 $IMAGE@$DIGEST
