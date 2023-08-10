@@ -87,3 +87,4 @@ However the gain in privacy is significant.
 * the upload to the transparency log can be disabled with the flag `--tlog-upload=true`
     - what happens in keyless mode?
     - what happens in keyed mode?
+    - in both cases, verification fails. Verification checks the validity of a signature
