@@ -48,12 +48,13 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-  cosign:
+  cosign-keyless:
     runs-on: ubuntu-latest
     needs: build-and-push-image
     permissions:
       contents: read
       packages: write
+      id-token: write
     steps:
       - name: Log in to the Container registry
         uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
@@ -64,5 +65,5 @@ jobs:
       - uses: sigstore/cosign-installer@main
         with:
           cosign-release: "v2.1.1" # optional
-      - name: echo digest
-        run: echo ${{ needs.build-and-push-image.outputs.digest }}
+      - name: cosign-keyless
+        run: cosign sign ghcr.io/falcorocks/learns@${{needs.build-and-push-image.outputs.digest}}
