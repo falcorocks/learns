@@ -78,9 +78,13 @@ The password is made available to the workflow through a Github secret, see the 
 Since this method does not use OIDC, there is no certificate containing identity related information stored at the public `rekor` instance.
 See for instance the entry https://search.sigstore.dev/?logIndex=30751454, generated from this repo through the aforementioned workflow file.
 This method gains privacy at the cost of losing the main advantage of the keyless approach: using identity over long lived keys that have to be managed.
-However the gain in privacy is significant. There are two interesting options:
+However the gain in privacy is significant.
+
+### interesting options
+
 * the upload to the transparency log can be disabled with the flag `--tlog-upload=true`
-    - is this useful? What is the added value of the transparency log when using your own keys?
+    - what happens in keyless mode?
+    - what happens in keyed mode?
 * we can issue a code signing certificate from Fulcio, even if a key is provided `--issue-certificate=false`
-    - what happens when this is enabled? It does not work without providing `id-token: write` permissions. What happens if you give it?
+    - what happens when this is enabled? It does not work without providing `id-token: write` permissions. What happens if you give it? Then you get a certificate in the transparency log that looks exactly like the one from the keyless workflow.
 

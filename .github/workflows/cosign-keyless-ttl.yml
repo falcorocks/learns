@@ -20,3 +20,6 @@ jobs:
     - uses: imjasonh/setup-crane@v0.1
     - run: DIGEST=$(crane digest $IMAGE) && cosign sign --yes $IMAGE@$DIGEST
     - run: crane manifest $(cosign triangulate $IMAGE) | jq .
+    - name: verify
+      run: cosign verify $IMAGE@$DIGEST --certificate-identity=https://github.com/falcorocks/learns/.github/workflows/cosign-keyless-ttl.yml@refs/heads/main --certificate-oidc-issuer=https://github.com/login/oauth
+
