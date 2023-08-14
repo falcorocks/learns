@@ -101,3 +101,10 @@ However the gain in privacy is significant.
     - which workflow triggered the signing (keyless mode only), including its file hash
     - repository information at the time of signing (keyless mode only), including branch, commit hash
 * in keyless mode, working with a transparency log is therefore mandatory
+
+### BYO annotations
+
+Signer can add custom key-value pairs to the image signature.
+These claims can be later verified for integrity testing.
+In `.github/workflows/cosign-keyed-ttl.yml` we add annotations for git porcelain, the commit hash from github action and the commit hash from the actual tree. These 3 info provide substantial evidence that the repository has not been tampered during the execution of the workflow (porcelain should be 0 and the two hashes should match).
+This approach in the keyed mode does not seem to leak information about the repository in the transparency log.
