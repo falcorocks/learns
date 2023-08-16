@@ -24,6 +24,7 @@ jobs:
     - run: crane manifest $(cosign triangulate $IMAGE) | jq .
   staging:
     runs-on: ubuntu-latest
+    needs: dev
     steps:
     - uses: actions/checkout@v3
     - uses: ./.github/actions/prepare
@@ -37,6 +38,7 @@ jobs:
         COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD_PROD }}
     - run: crane manifest $(cosign triangulate $IMAGE) | jq .
   production:
+    needs: staging
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
