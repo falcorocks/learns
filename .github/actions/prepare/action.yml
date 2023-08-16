@@ -10,3 +10,12 @@ runs:
     - name: save digest
       run: echo "DIGEST=$(crane digest $IMAGE)" >> "$GITHUB_ENV"
       shell: sh
+    - name: save commit sha for integrity check
+      run: echo "COMMIT_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+      shell: sh
+    - name: save porcelain state
+      run: echo "PORCELAIN=$([ -z "`git status --porcelain`" ] && echo 0 || echo 1)" >> "$GITHUB_ENV"
+      shell: sh
+    - name: set shared claims
+      shell: sh
+      run: echo "CLAIMS=$(-a github.sha=${{github.sha}} -a ref_name=${{github.ref_name}} -a ref_protected=${{github.ref_protected}} -a commit.sha=$COMMIT_SHA)" >> "$GITHUB_ENV"
