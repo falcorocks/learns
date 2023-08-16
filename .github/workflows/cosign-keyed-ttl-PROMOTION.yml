@@ -17,6 +17,18 @@ jobs:
       run: cosign copy alpine $IMAGE
     - name: dev test
       run: sleep 1
+    - name: save digest
+      run: echo "DIGEST=$(crane digest $IMAGE)" >> "$GITHUB_ENV"
+      shell: sh
+    - name: save commit sha for integrity check
+      run: echo "COMMIT_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+      shell: sh
+    - name: save porcelain state
+      run: echo "PORCELAIN=$([ -z "`git status --porcelain`" ] && echo 0 || echo 1)" >> "$GITHUB_ENV"
+      shell: sh
+    - name: set shared claims
+      shell: sh
+      run: echo "CLAIMS=$(-a github.sha=${{github.sha}} -a ref_name=${{github.ref_name}} -a ref_protected=${{github.ref_protected}} -a commit.sha=$COMMIT_SHA)" >> "$GITHUB_ENV"
     - name: promote image to staging
       run: cosign sign --yes --key cosign.key ${CLAIMS} -a porcelain=$PORCELAIN -a promotion=staging $IMAGE@$DIGEST
       env:
@@ -28,6 +40,18 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - uses: ./.github/actions/prepare
+    - name: save digest
+      run: echo "DIGEST=$(crane digest $IMAGE)" >> "$GITHUB_ENV"
+      shell: sh
+    - name: save commit sha for integrity check
+      run: echo "COMMIT_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+      shell: sh
+    - name: save porcelain state
+      run: echo "PORCELAIN=$([ -z "`git status --porcelain`" ] && echo 0 || echo 1)" >> "$GITHUB_ENV"
+      shell: sh
+    - name: set shared claims
+      shell: sh
+      run: echo "CLAIMS=$(-a github.sha=${{github.sha}} -a ref_name=${{github.ref_name}} -a ref_protected=${{github.ref_protected}} -a commit.sha=$COMMIT_SHA)" >> "$GITHUB_ENV"
     - name: verify image & claims
       run: cosign verify --key cosign.pub ${CLAIMS} -a porcelain=0 -a promotion=staging $IMAGE@$DIGEST
     - name: staging test
@@ -44,4 +68,4 @@ jobs:
     - uses: actions/checkout@v3
     - uses: ./.github/actions/prepare
     - name: verify image & claims
-      run: cosign verify --key prod.pub ${CLAIMS} -a porcelain=0 -a promotion=production $IMAGE@$DIGEST
+      run: cosign verify --key prod.pub -a porcelain=0 -a promotion=production $IMAGE@$DIGEST
