@@ -1,0 +1,11 @@
+name: 'Prepare'
+description: 'Sets up cosign, crane and DIGEST variable'
+runs:
+  using: "composite"
+  steps:
+    - uses: sigstore/cosign-installer@main
+      with:
+        cosign-release: "v2.1.1"
+    - uses: imjasonh/setup-crane@v0.1
+    - name: save digest
+      run: echo "DIGEST=$(crane digest $IMAGE)" >> "$GITHUB_ENV"
