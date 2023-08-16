@@ -9,3 +9,4 @@ runs:
     - uses: imjasonh/setup-crane@v0.1
     - name: save digest
       run: echo "DIGEST=$(crane digest $IMAGE)" >> "$GITHUB_ENV"
+      shell: sh
