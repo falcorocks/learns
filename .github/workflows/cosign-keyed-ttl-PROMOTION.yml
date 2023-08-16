@@ -12,8 +12,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-    - run: cosign copy alpine $IMAGE
-    - uses: .github/actions/prepare.yml
+    - uses: ./.github/actions/prepare.yml
+    # - run: cosign copy alpine $IMAGE
     # - name: save commit sha for integrity check
     #     # guarantees repository has not been tampered with new commits
     #   run: echo "COMMIT_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
