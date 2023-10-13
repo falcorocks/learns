@@ -1,0 +1,7 @@
+trillian:
+  initContainerImage:
+    netcat:
+      registry: cgr.dev
+      repository: chainguard/netcat
+      version: "latest"
+      imagePullPolicy: IfNotPresent
