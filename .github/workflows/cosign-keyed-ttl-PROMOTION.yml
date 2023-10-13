@@ -30,7 +30,7 @@ jobs:
       shell: sh
       run: echo "CLAIMS=$(-a github.sha=${{github.sha}} -a ref_name=${{github.ref_name}} -a ref_protected=${{github.ref_protected}} -a commit.sha=$COMMIT_SHA)" >> "$GITHUB_ENV"
     - name: promote image to staging
-      run: cosign sign --yes --key cosign.key ${CLAIMS} -a porcelain=$PORCELAIN -a promotion=staging $IMAGE@$DIGEST
+      run: cosign sign --yes --key sigstore/cosign/keys/cosign.key ${CLAIMS} -a porcelain=$PORCELAIN -a promotion=staging $IMAGE@$DIGEST
       env:
         COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
     - run: crane manifest $(cosign triangulate $IMAGE) | jq .
@@ -53,11 +53,11 @@ jobs:
       shell: sh
       run: echo "CLAIMS=$(-a github.sha=${{github.sha}} -a ref_name=${{github.ref_name}} -a ref_protected=${{github.ref_protected}} -a commit.sha=$COMMIT_SHA)" >> "$GITHUB_ENV"
     - name: verify image & claims
-      run: cosign verify --key cosign.pub ${CLAIMS} -a porcelain=0 -a promotion=staging $IMAGE@$DIGEST
+      run: cosign verify --key sigstore/cosign/keys/cosign.pub ${CLAIMS} -a porcelain=0 -a promotion=staging $IMAGE@$DIGEST
     - name: staging test
       run: sleep 1
     - name: promote image to production
-      run: cosign sign --yes --key prod.key ${CLAIMS} -a promotion=production $IMAGE@$DIGEST
+      run: cosign sign --yes --key sigstore/cosign/keys/prod.key ${CLAIMS} -a promotion=production $IMAGE@$DIGEST
       env:
         COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD_PROD }}
     - run: crane manifest $(cosign triangulate $IMAGE) | jq .
@@ -68,4 +68,4 @@ jobs:
     - uses: actions/checkout@v3
     - uses: ./.github/actions/prepare
     - name: verify image & claims
-      run: cosign verify --key prod.pub -a porcelain=0 -a promotion=production $IMAGE@$DIGEST
+      run: cosign verify --key sigstore/cosign/keys/prod.pub -a porcelain=0 -a promotion=production $IMAGE@$DIGEST

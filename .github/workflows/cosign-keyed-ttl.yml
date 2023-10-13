@@ -26,12 +26,12 @@ jobs:
         # guarantees integrity of directory files, including hidden files
       run: echo "PORCELAIN=$([ -z "`git status --porcelain`" ] && echo 0 || echo 1)" >> "$GITHUB_ENV"
     - name: sign
-      run: cosign sign --yes --key cosign.key -a github.sha=${{github.sha}} -a ref_name=${{github.ref_name}} -a ref_protected=${{github.ref_protected}} -a porcelain=$PORCELAIN -a commit.sha=$COMMIT_SHA $IMAGE@$DIGEST
+      run: cosign sign --yes --key sigstore/cosign/keys/cosign.key -a github.sha=${{github.sha}} -a ref_name=${{github.ref_name}} -a ref_protected=${{github.ref_protected}} -a porcelain=$PORCELAIN -a commit.sha=$COMMIT_SHA $IMAGE@$DIGEST
       env:
         COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
     - run: crane manifest $(cosign triangulate $IMAGE) | jq .
     - name: verify image only
-      run: cosign verify --key cosign.pub $IMAGE@$DIGEST
+      run: cosign verify --key sigstore/cosign/keys/cosign.pub $IMAGE@$DIGEST
     - name: verify image & claims
         # TODO: extract value of github.sha from attestations
-      run: cosign verify --key cosign.pub -a ref_name=${{github.ref_name}} -a ref_protected=${{github.ref_protected}} -a porcelain=0 -a commit.sha=${{github.sha}} $IMAGE@$DIGEST
+      run: cosign verify --key sigstore/cosign/keys/cosign.pub -a ref_name=${{github.ref_name}} -a ref_protected=${{github.ref_protected}} -a porcelain=0 -a commit.sha=${{github.sha}} $IMAGE@$DIGEST
