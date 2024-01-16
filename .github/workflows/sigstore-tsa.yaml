@@ -15,7 +15,7 @@ env:
   TARGET_IMAGE_URI: ttl.sh/falcorocks-${{ github.sha }}:1h
 jobs:
   sign:
-    runs-on: ubuntu
+    runs-on: ubuntu-latest
     container: alpine
     permissions:
       packages: write
@@ -25,7 +25,7 @@ jobs:
       - run: cosign copy -f alpine $TARGET_IMAGE_URI
       - run: cosign sign --yes $TARGET_IMAGE_URI --tlog-upload=false --timestamp-server-url=https://tsa.enforce.dev/api/v1/timestamp
   verify:
-    runs-on: ubuntu
+    runs-on: ubuntu-latest
     container: alpine
     permissions:
       packages: write
