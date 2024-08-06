@@ -9,7 +9,8 @@
     - `github-policy-controller` the namespace where the controller webhook runs
 1. I used `helm template` command to generate the kubernetes manifests. `policy-controller.yaml` is for the controller, `trust-policies.yaml` is for the trust policies chart (using the values in `values.trust-policies.yaml`)
   ```
-  
+  helm template github-policy-controller oci://ghcr.io/github/artifact-attestations-helm-charts/policy-controller --version v0.10.0-github5 --namespace=github-policy-controller > policy-controller.yaml
+  helm template github-trust-policies oci://ghcr.io/github/artifact-attestations-helm-charts/policy-controller --version v0.5.0 --namespace=github-policy-controller --values=values.trust-policies.yaml > trust-policies.yaml
   ```
 
 1. the values enable the creation of the defaul clusterImagePolicy to only admit images signed by github artifact attestation/public sigstore as well as an exemption ClusterImagePolicy
@@ -79,24 +80,24 @@ I tried to deploy these 3 images:
 ### Result
 
 🆗 `minio` is denied deployment, as expected the `github-policy` fails
-    ```
-    % kubectl run minio --namespace=test --image=bitnami/minio:latest
-    Error from server (BadRequest): admission webhook "policy.sigstore.dev" denied the request: validation failed: failed policy: github-policy: spec.containers[0].image index.docker.io/bitnami/minio@sha256:b3f9d8b5fc4ee245219a703ec805e37642bae521194244b28ce794ca29d652df no bundle found in referrers no bundle found in referrers
-    ```
+```
+% kubectl run minio --namespace=test --image=bitnami/minio:latest
+Error from server (BadRequest): admission webhook "policy.sigstore.dev" denied the request: validation failed: failed policy: github-policy: spec.containers[0].image index.docker.io/bitnami/minio@sha256:b3f9d8b5fc4ee245219a703ec805e37642bae521194244b28ce794ca29d652df no bundle found in referrers no bundle found in referrers
+```
 
 ❎🤔 `nginx` should be allowed deployment, but it is not. The `github-policy` fails, which is expected as the image is unsigned. According to the Sigstore Policy Controller docs https://docs.sigstore.dev/policy-controller/overview/#admission-of-images to be deployed an image must pass at least 1 authority in each of the policies that regard it (that is when the image falls under the provided `images` glob). In this case the image falls under `images` glob of both the `github-policy` and the `github-exempt-policy`.
-    ```
-    % kubectl run nginx --namespace=test --image=nginx:latest        
-    Error from server (BadRequest): admission webhook "policy.sigstore.dev" denied the request: validation failed: failed policy: github-policy: spec.containers[0].image index.docker.io/library/nginx@sha256:6af79ae5de407283dcea8b00d5c37ace95441fd58a8b1d2aa1ed93f5511bb18c no bundle found in referrers no bundle found in referrers
-    ```
+```
+% kubectl run nginx --namespace=test --image=nginx:latest        
+Error from server (BadRequest): admission webhook "policy.sigstore.dev" denied the request: validation failed: failed policy: github-policy: spec.containers[0].image index.docker.io/library/nginx@sha256:6af79ae5de407283dcea8b00d5c37ace95441fd58a8b1d2aa1ed93f5511bb18c no bundle found in referrers no bundle found in referrers
+```
 
-⚠️`falcorocks/learns` is allowed deployment as expected, however I run into some errors when I repeated the command
-    ```
-    % kubectl run falcorocks-learns --namespace=test --image=ghcr.io/falcorocks/learns@sha256:4ac65f23061de2faef157760fa2125c954b5b064bc25e10655e90bd92bc3b354
+⚠️`falcorocks/learns` is allowed deployment as expected, however I run into some errors when I repeated the command:
+```
+% kubectl run falcorocks-learns --namespace=test --image=ghcr.io/falcorocks/learns@sha256:4ac65f23061de2faef157760fa2125c954b5b064bc25e10655e90bd92bc3b354
 pod/falcorocks-learns created
-    % kubectl run falcorocks-learns --namespace=test --image=ghcr.io/falcorocks/learns@sha256:4ac65f23061de2faef157760fa2125c954b5b064bc25e10655e90bd92bc3b354
+% kubectl run falcorocks-learns --namespace=test --image=ghcr.io/falcorocks/learns@sha256:4ac65f23061de2faef157760fa2125c954b5b064bc25e10655e90bd92bc3b354
 Error from server (InternalError): Internal error occurred: failed calling webhook "policy.sigstore.dev": failed to call webhook: Post "https://webhook.github-policy-controller.svc:443/validations?timeout=10s": EOF
-    ```
+```
 
 Turns out, the webhook crashed with some memory error when I repeated the command. I can reproduce this consistently. Perhaps the controller does not have enough memory? The request is for `128Mi` and the limit is for `512Mi`.
 ```
@@ -188,5 +189,29 @@ created by github.com/sigstore/policy-controller/pkg/webhook.ValidatePolicy in g
 Stream closed EOF for github-policy-controller/github-policy-controller-webhook-8496984cbc-cjchv (policy-controller-webhook)
 ```
 
-After raising the request to `512Mi` and the limit to `1024Mi`...
+After raising the request to `512Mi` and the limit to `1024Mi` I run into the same exact error again, so this seems to not be about memory available. I need to verify if this also happens on the upstream sigstore policy controller.
+
+```
+panic: runtime error: invalid memory address or nil pointer dereference
+[signal SIGSEGV: segmentation violation code=0x1 addr=0x8 pc=0x1c3d260]
+
+goroutine 6094 [running]:
+github.com/sigstore/sigstore-go/pkg/root.(*TrustedRoot).RekorLogs(0xc000f69950?)
+    github.com/sigstore/sigstore-go@v0.3.0/pkg/root/trusted_root.go:74
+github.com/sigstore/sigstore-go/pkg/verify.VerifyArtifactTransparencyLog({0x347da30, 0xc000f69950}, {0x3477fe0, 0x0}, 0x1, 0x1, 0x0)
+    github.com/sigstore/sigstore-go@v0.3.0/pkg/verify/tlog.go:85 +0x289
+github.com/sigstore/sigstore-go/pkg/verify.(*SignedEntityVerifier).VerifyTransparencyLogInclusion(0xc001280a20?, {0x347da30?, 0xc000f69950?})
+    github.com/sigstore/sigstore-go@v0.3.0/pkg/verify/signed_entity.go:618 +0x65
+github.com/sigstore/sigstore-go/pkg/verify.(*SignedEntityVerifier).Verify(0xc00065ce70, {0x347da30, 0xc000f69950}, {0xc001280a20?, {0xc0010a1ef0?, 0x10?, 0xc000101808?}})
+    github.com/sigstore/sigstore-go@v0.3.0/pkg/verify/signed_entity.go:475 +0xdb
+github.com/sigstore/policy-controller/pkg/webhook.VerifiedBundles({0x3477fa0, 0xc000ac85f0}, {0x3477fe0?, 0x0?}, {0xc000965b90, 0x2, 0x2}, {0xc0010a1ef0, 0x1, 0x1}, ...)
+    github.com/sigstore/policy-controller/pkg/webhook/bundle.go:116 +0x28d
+github.com/sigstore/policy-controller/pkg/webhook.ValidatePolicyAttestationsForAuthorityWithBundle({0x34750f8, 0xc0010252c0}, {0x3477fa0, 0xc000ac85f0}, {{0xc001184f50, 0xb}, 0x0, 0xc000443a80, 0x0, {0x0, ...}, ...}, ...)
+    github.com/sigstore/policy-controller/pkg/webhook/validator.go:1028 +0x669
+github.com/sigstore/policy-controller/pkg/webhook.ValidatePolicy.func1()
+    github.com/sigstore/policy-controller/pkg/webhook/validator.go:542 +0x44d
+created by github.com/sigstore/policy-controller/pkg/webhook.ValidatePolicy in goroutine 6092
+    github.com/sigstore/policy-controller/pkg/webhook/validator.go:516 +0x1e5
+Stream closed EOF for github-policy-controller/test-policy-controller-webhook-685767d4f-zcs6n (policy-controller-webhook)
+```
 
