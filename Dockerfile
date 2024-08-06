@@ -1,1 +1,1 @@
-FROM alpine:latest
+FROM ngnix:latest
