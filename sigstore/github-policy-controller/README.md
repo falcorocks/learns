@@ -91,7 +91,7 @@ Error from server (BadRequest): admission webhook "policy.sigstore.dev" denied t
 Error from server (BadRequest): admission webhook "policy.sigstore.dev" denied the request: validation failed: failed policy: github-policy: spec.containers[0].image index.docker.io/library/nginx@sha256:6af79ae5de407283dcea8b00d5c37ace95441fd58a8b1d2aa1ed93f5511bb18c no bundle found in referrers no bundle found in referrers
 ```
 
-⚠️`falcorocks/learns` is allowed deployment as expected, however I run into some errors when I repeated the command:
+⚠️`falcorocks/learns` is allowed deployment as expected, however I run into some errors when I repeat the command:
 ```
 % kubectl run falcorocks-learns --namespace=test --image=ghcr.io/falcorocks/learns@sha256:4ac65f23061de2faef157760fa2125c954b5b064bc25e10655e90bd92bc3b354
 pod/falcorocks-learns created
@@ -99,7 +99,10 @@ pod/falcorocks-learns created
 Error from server (InternalError): Internal error occurred: failed calling webhook "policy.sigstore.dev": failed to call webhook: Post "https://webhook.github-policy-controller.svc:443/validations?timeout=10s": EOF
 ```
 
-Turns out, the webhook crashed with some memory error when I repeated the command. I can reproduce this consistently. Perhaps the controller does not have enough memory? The request is for `128Mi` and the limit is for `512Mi`.
+Turns out, the webhook crashed with some memory error when I repeated the command. I can reproduce this consistently. I also get this problem when I use a tag instead of the digest. I tried to reproduce these errors with the upstream sigstore controller, and I cannot, so this is specific to the Github fork.
+
+My first thought was that this had to be a memory limit, the request is for `128Mi` and the limit is for `512Mi`. But that is not the case, doubling the memory did not help
+
 ```
 {"level":"info","ts":1722955214.0927722,"logger":"fallback","caller":"webhook/main.go:132","msg":"Initializing TUF root from  => https://tuf-repo-cdn.sigstore.dev"}
 main.go:149: {
@@ -189,7 +192,7 @@ created by github.com/sigstore/policy-controller/pkg/webhook.ValidatePolicy in g
 Stream closed EOF for github-policy-controller/github-policy-controller-webhook-8496984cbc-cjchv (policy-controller-webhook)
 ```
 
-After raising the request to `512Mi` and the limit to `1024Mi` I run into the same exact error again, so this seems to not be about memory available. I need to verify if this also happens on the upstream sigstore policy controller.
+After raising the request to `512Mi` and the limit to `1024Mi` I run into the same exact error again
 
 ```
 panic: runtime error: invalid memory address or nil pointer dereference
@@ -214,4 +217,3 @@ created by github.com/sigstore/policy-controller/pkg/webhook.ValidatePolicy in g
     github.com/sigstore/policy-controller/pkg/webhook/validator.go:516 +0x1e5
 Stream closed EOF for github-policy-controller/test-policy-controller-webhook-685767d4f-zcs6n (policy-controller-webhook)
 ```
-
