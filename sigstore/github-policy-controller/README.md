@@ -10,7 +10,7 @@
 1. I used `helm template` command to generate the kubernetes manifests. `policy-controller.yaml` is for the controller, `trust-policies.yaml` is for the trust policies chart (using the values in `values.trust-policies.yaml`)
   ```
   helm template github-policy-controller oci://ghcr.io/github/artifact-attestations-helm-charts/policy-controller --version v0.10.0-github5 --namespace=github-policy-controller > policy-controller.yaml
-  helm template github-trust-policies oci://ghcr.io/github/artifact-attestations-helm-charts/policy-controller --version v0.5.0 --namespace=github-policy-controller --values=values.trust-policies.yaml > trust-policies.yaml
+  helm template github-trust-policies oci://ghcr.io/github/artifact-attestations-helm-charts/trust-policies --version v0.5.0 --namespace=github-policy-controller --values=values.trust-policies.yaml > trust-policies.yaml
   ```
 
 1. the values enable the creation of the defaul clusterImagePolicy to only admit images signed by github artifact attestation/public sigstore as well as an exemption ClusterImagePolicy
