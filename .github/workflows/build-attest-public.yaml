@@ -12,30 +12,22 @@ jobs:
       packages: write
       contents: read
       attestations: write
-    env:
-      REGISTRY: ghcr.io
-      IMAGE_NAME: ${{ github.repository }}
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
         with:
-          registry: ${{ env.REGISTRY }}
+          registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Build and push image
-        id: push
-        uses: docker/build-push-action@v5.0.0
-        with:
-          context: .
-          push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+      - uses: imjasonh/setup-crane@31b88efe9de28ae0ffa220711af4b60be9435f6e
+      - name: copy
+        run: crane copy chainguard/redis:latest ghcr.io/falcorocks/learns/chainguard-redis:latest
+      - name: fetch digest from ghcr
+        run: echo "DIGEST=$(crane digest ghcr.io/falcorocks/learns/chainguard-redis:latest)" >> $GITHUB_ENV
       - name: Attest
         uses: actions/attest-build-provenance@v1
         id: attest
         with:
-          subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          subject-digest: ${{ steps.push.outputs.digest }}
+          subject-name: ghcr.io/falcorocks/learns/chainguard-redis
+          subject-digest: ${{ env.DIGEST }}
           push-to-registry: true
