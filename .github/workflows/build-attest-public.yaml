@@ -16,18 +16,17 @@ jobs:
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
         with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          username: falcorocks339
+          password: ${{ secrets.DOCKER_PAT }}
       - uses: imjasonh/setup-crane@31b88efe9de28ae0ffa220711af4b60be9435f6e
       - name: copy
-        run: crane copy chainguard/redis:latest ghcr.io/falcorocks/learns/chainguard-redis:latest
-      - name: fetch digest from ghcr
-        run: echo "DIGEST=$(crane digest ghcr.io/falcorocks/learns/chainguard-redis:latest)" >> $GITHUB_ENV
+        run: crane copy chainguard/redis:latest falcorocks339/chainguard-redis:latest
+      - name: fetch digest from dockerhub
+        run: echo "DIGEST=$(crane digest falcorocks339/chainguard-redis:latest)" >> $GITHUB_ENV
       - name: Attest
         uses: actions/attest-build-provenance@v1
         id: attest
         with:
-          subject-name: ghcr.io/falcorocks/learns/chainguard-redis
+          subject-name: falcorocks/chainguard-redis
           subject-digest: ${{ env.DIGEST }}
           push-to-registry: true
