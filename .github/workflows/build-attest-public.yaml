@@ -9,7 +9,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       id-token: write
-      packages: write
       contents: read
       attestations: write
     steps:
@@ -27,6 +26,6 @@ jobs:
         uses: actions/attest-build-provenance@v1
         id: attest
         with:
-          subject-name: falcorocks339/chainguard-redis
+          subject-name: docker.io/falcorocks339/chainguard-redis
           subject-digest: ${{ env.DIGEST }}
           push-to-registry: true
